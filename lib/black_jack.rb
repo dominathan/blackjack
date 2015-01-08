@@ -1,3 +1,5 @@
+require 'pry'
+
 class BlackJack
   attr_accessor :player
 
@@ -10,52 +12,43 @@ class BlackJack
     puts "-"*30
     puts 'Let\'s Play BlackJack'
     puts "You have $#{@player.bank}"
+    answer = 'h'
     while @player.bank > 0
-      @player.hand << @player.cards.deal
-      value = BlackJack.sum_hand(@player.hand)
-      puts "Your current hand is #{@player.hand[0]} #{@player.hand[1]}"
-      if value.length < 2
-        puts "Your value is #{value.first}"
-      else
-        puts "You either have #{value.first.to_s} or #{value.last.to_s}"
-      end
-      puts "Would you like to stay or to hit?"
-      answer = gets.chomp
-      if answer.downcase == "h" || answer.downcase == "hit"
-        @player.hand << @player.cards.hit
-        puts "Your new hand is #{@player.hand.flatten(@player.hand.length)}."
-        value = BlackJack.sum_hand(@player.hand)
-        if value.first > 21
-          puts "You Lose. You got #{value.first}!! \n You are BUST!!! (above 21)"
-        else
-          if value.length < 2
-            puts "Your value is #{value.first}"
+      BlackJack.draw(@player,'deal')
+      while answer.downcase == "h" || answer.downcase == "hit" && @player.bank > 0
+        puts "Would you like to stay or to hit?"
+        answer = gets.chomp
+        if answer == 'h' || answer == 'hit'
+          BlackJack.draw(@player, 'hit')
+          if BlackJack.is_hand_bust?(@player)
+            puts "You Lose. Your hand is BUST!!!! #{@player.hand.flatten(@player.hand.length)} : Value = #{BlackJack.sum_hand(@player.hand)}"
+            @player.hand = []
+            play
           else
-            puts "You either have #{value.first} or #{value.last}"
+            puts "Your value is #{BlackJack.sum_hand(@player.hand)}"
           end
-          puts "Would you like to stay or hit!?"
-          answer = gets.chomp
-          if answer.downcase == "h" || answer.downcase == "hit"
-            @player.hand << @player.cards.hit
-            puts "Your new hand is #{@player.hand.flatten(@player.hand.length)}."
-            value = BlackJack.sum_hand(@player.hand)
-            if value.first > 21
-              puts "You Lose. You got #{value.first}!! \n You are BUST!!! (above 21)"
-            else
-              if value.length < 2
-                puts "Your value is #{value.first}"
-              else
-                puts "You either have #{value.first} or #{value.last}"
-              end
-            end
-          end
+        else
+          puts "You may stay with #{BlackJack.sum_hand(@player.hand)}"
         end
-      else
-        puts "You chose to stay at #{BlackJack.sum_hand(@player.hand)}"
       end
       @player.hand = []
       play
     end
+  end
+
+  def self.draw(player,draw)
+    if draw == "hit"
+      player.hand << player.cards.hit
+    else
+      player.hand << player.cards.deal
+    end
+    puts "Your hand is #{player.hand.flatten(player.hand.length)}."
+    value = BlackJack.sum_hand(player.hand)
+  end
+
+  def self.is_hand_bust?(player)
+    value = BlackJack.sum_hand(player.hand)
+    value.first > 21 ? true : false
   end
 
   def self.sum_hand(hand)
@@ -65,7 +58,7 @@ class BlackJack
     else
       aces_eleven = flathand.reduce(:+)
       aces_one = flathand.map { |number| number == 11 ? number = 1 : number }.reduce(:+)
-      [aces_eleven, aces_one]
+      [aces_one, aces_eleven]
     end
   end
 
