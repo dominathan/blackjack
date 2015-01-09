@@ -15,6 +15,7 @@ class BlackJack
     answer = 'h'
     while @player.bank > 0
       draw(@player,'deal')
+      draw(@dealer, 'deal')
       while answer.downcase == "h" || answer.downcase == "hit" && @player.bank > 0
         puts "Would you like to stay or to hit?"
         answer = gets.chomp
@@ -23,15 +24,31 @@ class BlackJack
           if BlackJack.is_hand_bust?(@player)
             puts "You Lose. Your hand is BUST!!!! #{@player.hand.flatten(@player.hand.length)} : Value = #{BlackJack.sum_hand(@player.hand)}"
             @player.hand = []
+            @dealer.hand = []
             play
           else
             puts "Your value is #{BlackJack.sum_hand(@player.hand)}"
           end
         else
-          puts "You may stay with #{BlackJack.sum_hand(@player.hand)}"
+          value = BlackJack.sum_hand(@player.hand)
+          puts "You are staying with #{value}"
+          dealer_value = BlackJack.sum_hand(@dealer.hand)
+          while dealer_value.first < 17
+            draw(@dealer,'hit')
+            dealer_value = BlackJack.sum_hand(@dealer.hand)
+            hand_value_calculator('dealer', dealer_value)
+          end
+          if dealer_value.first < 21 && dealer_value.first > value.first
+            puts "Dealer won with #{dealer_value} compare to your #{value}"
+          elsif dealer_value.first > 21
+            puts "YOU WIN!!! with #{value} vs DEALER #{dealer_value}"
+          elsif dealer_value.first < 21 && dealer_value.first < value.first
+            puts "YOU WINN!!!! with #{value} vs Dealer #{dealer_value}"
+          end
         end
       end
       @player.hand = []
+      @dealer.hand = []
       play
     end
   end
@@ -43,11 +60,14 @@ class BlackJack
       player.hand << @cards.deal
     end
     puts "Your hand is #{player.hand.flatten(player.hand.length)}."
-    value = BlackJack.sum_hand(player.hand)
+    hand_value_calculator(player,BlackJack.sum_hand(player.hand))
+  end
+
+  def hand_value_calculator(name,value)
     if value.length > 1
-      puts "You can play as either #{value.first} or #{value.last}"
+      puts "#{name} has either #{value.first} or #{value.last}"
     else
-      puts "You have #{value.first}"
+      puts "#{name} has #{value.first}"
     end
   end
 
