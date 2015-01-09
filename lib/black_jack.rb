@@ -1,5 +1,3 @@
-require 'pry'
-
 class BlackJack
   attr_accessor :player
 
