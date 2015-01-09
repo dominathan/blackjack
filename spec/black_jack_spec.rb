@@ -32,7 +32,6 @@ describe 'black_jack' do
   end
 
   describe 'when the game begins' do
-    bj.play
     let(:player) { bj.player }
     context 'the player' do
       it 'should lose $10' do
