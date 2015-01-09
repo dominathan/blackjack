@@ -1,8 +1,10 @@
 class BlackJack
-  attr_accessor :player
+  attr_accessor :player, :dealer, :cards
 
   def initialize
     @player = Player.new
+    @dealer = Dealer.new
+    @cards = Deck.new
   end
 
   def play
@@ -12,12 +14,12 @@ class BlackJack
     puts "You have $#{@player.bank}"
     answer = 'h'
     while @player.bank > 0
-      BlackJack.draw(@player,'deal')
+      draw(@player,'deal')
       while answer.downcase == "h" || answer.downcase == "hit" && @player.bank > 0
         puts "Would you like to stay or to hit?"
         answer = gets.chomp
         if answer == 'h' || answer == 'hit'
-          BlackJack.draw(@player, 'hit')
+          draw(@player, 'hit')
           if BlackJack.is_hand_bust?(@player)
             puts "You Lose. Your hand is BUST!!!! #{@player.hand.flatten(@player.hand.length)} : Value = #{BlackJack.sum_hand(@player.hand)}"
             @player.hand = []
@@ -34,14 +36,19 @@ class BlackJack
     end
   end
 
-  def self.draw(player,draw)
+  def draw(player,draw)
     if draw == "hit"
-      player.hand << player.cards.hit
+      player.hand << @cards.hit
     else
-      player.hand << player.cards.deal
+      player.hand << @cards.deal
     end
     puts "Your hand is #{player.hand.flatten(player.hand.length)}."
     value = BlackJack.sum_hand(player.hand)
+    if value.length > 1
+      puts "You can play as either #{value.first} or #{value.last}"
+    else
+      puts "You have #{value.first}"
+    end
   end
 
   def self.is_hand_bust?(player)
